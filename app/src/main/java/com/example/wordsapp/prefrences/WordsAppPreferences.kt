@@ -8,15 +8,15 @@ class WordsAppPreferences(private val context: Context) :
 
     companion object {
         const val DEF_VALUE_STRING = ""
-        const val PREF_KEY_NAME = "name_key"
+        const val PREF_KEY_WORD = "word_key"
     }
 
-    fun saveName(name: String) {
-        putString(PREF_KEY_NAME, name)
+    fun saveWord(name: String) {
+        putString(PREF_KEY_WORD, name)
     }
 
-    fun getName(): String {
-        return getString(PREF_KEY_NAME, DEF_VALUE_STRING)!!
+    fun getWord(): String {
+        return getString(PREF_KEY_WORD, DEF_VALUE_STRING)!!
     }
 
     fun clearPrefs() {

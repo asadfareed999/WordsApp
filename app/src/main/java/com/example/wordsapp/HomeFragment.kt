@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.wordsapp.networking.BaseWebservices
 import com.example.wordsapp.networking.OnResponseListener
+import com.example.wordsapp.networking.responsemodels.AllWords
 import com.example.wordsapp.networking.responsemodels.ResponseWords
 import com.example.wordsapp.networking.responsemodels.Word
 import com.example.wordsapp.prefrences.WordsAppPreferences
@@ -40,49 +41,73 @@ class HomeFragment() : Fragment() {
         val view: View = inflater.inflate(R.layout.fragment_home, container, false)
         wordsAppPreferences = WordsAppPreferences(view.context)
         initViews(view)
-        clearDatabase()
         initApiListener(view)
         clickListeners(view)
         swipeRefresh.isRefreshing = true
-        exeOrdersApi()
+        val words:List<AllWords> = SugarRecord.listAll(AllWords::class.java)
+        val size=words.size
+        if (words.isEmpty()){
+            exeOrdersApi()
+        }else{
+            val wordsList: List<List<String>> = arrayListOf()
+            for (x in 0 until words.size){
+                val word=words.get(x).word.toString()
+                val meaning=words.get(x).meaning.toString()
+                val singleWord: List<String> = arrayListOf(word,meaning)
+                wordsList.plusElement(singleWord)
+            }
+            //val word=words.get(0).word
+            //val meaning=words.get(1).meaning
+           setUpRecyclerview(wordsList)
+            swipeRefresh.isRefreshing = false
+        }
         return view
     }
 
     private fun clearDatabase() {
-        SugarRecord.deleteAll(Word::class.java)
+        SugarRecord.deleteAll(AllWords::class.java)
     }
 
     private fun initApiListener(view: View) {
         getDataApiListener = object : OnResponseListener<ResponseWords> {
             override fun onSuccess(response: ResponseWords?) {
-                swipeRefresh.isRefreshing = false
-                progressBar.visibility=View.GONE
-                textViewUpdate.isEnabled=true
-                textViewMeanings.isEnabled=true
-                val words: ResponseWords = response!!
-                recyclerView.layoutManager =
-                    LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
-                adapter = WordsAdapter( words.values)
-                recyclerView.adapter = adapter
-                adapter.notifyDataSetChanged()
+                val wordsResponse: ResponseWords = response!!
+                clearDatabase()
+                val words=wordsResponse.values
+                for (x in 0 until words.size){
+                    val word=AllWords(words[x][0], words[x][1])
+                    word.save()
+                }
+
+                EnableViews()
+                setUpRecyclerview(words)
             }
 
             override fun onFailure(t: Throwable) {
-                swipeRefresh.isRefreshing = false
-                progressBar.visibility=View.GONE
-                textViewUpdate.isEnabled=true
-                textViewMeanings.isEnabled=true
+                EnableViews()
                 Snackbar.make(view, t.message.toString(), Snackbar.LENGTH_LONG).show()
             }
 
             override fun onCancel() {
-                swipeRefresh.isRefreshing = false
-                progressBar.visibility=View.GONE
-                textViewUpdate.isEnabled=true
-                textViewMeanings.isEnabled=true
+                EnableViews()
             }
 
         }
+    }
+
+    private fun setUpRecyclerview(words: List<List<String>>) {
+        recyclerView.layoutManager =
+            LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
+        adapter = WordsAdapter(words)
+        recyclerView.adapter = adapter
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun EnableViews() {
+        swipeRefresh.isRefreshing = false
+        progressBar.visibility = View.GONE
+        textViewUpdate.isEnabled = true
+        textViewMeanings.isEnabled = true
     }
 
     private fun exeOrdersApi() {
