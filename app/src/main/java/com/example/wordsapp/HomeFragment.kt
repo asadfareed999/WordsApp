@@ -1,9 +1,12 @@
 package com.example.wordsapp
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +23,9 @@ import com.example.wordsapp.networking.responsemodels.Word
 import com.example.wordsapp.prefrences.WordsAppPreferences
 import com.google.android.material.snackbar.Snackbar
 import com.orm.SugarRecord
+import java.util.*
+import kotlin.Comparator
+import kotlin.collections.ArrayList
 
 
 class HomeFragment() : Fragment() {
@@ -30,9 +36,13 @@ class HomeFragment() : Fragment() {
     private val apiEndpointClient = BaseWebservices.getApiEndpointClient()
     private lateinit var getDataApiListener: OnResponseListener<ResponseWords>
     private lateinit var wordsAppPreferences: WordsAppPreferences
-    private lateinit var textViewUpdate:TextView
-    private lateinit var textViewMeanings:TextView
+    private lateinit var textViewNoData:TextView
     private lateinit var progressBar: ProgressBar
+    private lateinit var allWordsList: ArrayList<Word>
+    private lateinit var buttonUpdate:Button
+    private lateinit var buttonMeanings:Button
+    private lateinit var buttonSort:Button
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,19 +59,35 @@ class HomeFragment() : Fragment() {
         if (words.isEmpty()){
             exeOrdersApi()
         }else{
-            val wordsList: List<List<String>> = arrayListOf()
-            for (x in 0 until words.size){
-                val word=words.get(x).word.toString()
-                val meaning=words.get(x).meaning.toString()
-                val singleWord: List<String> = arrayListOf(word,meaning)
-                wordsList.plusElement(singleWord)
-            }
-            //val word=words.get(0).word
-            //val meaning=words.get(1).meaning
-           setUpRecyclerview(wordsList)
+            fetchOfflineData(words)
             swipeRefresh.isRefreshing = false
         }
         return view
+    }
+
+    private fun fetchOfflineData(words: List<AllWords>) {
+        val wordsList: ArrayList<Word> = ArrayList(words.size)
+        val selectedWordsList=getSelectedWordsList(SugarRecord.listAll(Word::class.java))
+        for (x in 0 until words.size) {
+            val word = words.get(x).word.toString()
+            val meaning = words.get(x).meaning.toString()
+            var seleted=words.get(x).selected
+            if (selectedWordsList.contains(word)){
+                seleted=true
+            }
+            val singleWord: Word = Word(word, meaning,seleted)
+            wordsList.add(singleWord)
+        }
+        wordsList.removeAt(0)
+        allWordsList=wordsList
+        if (wordsList.isEmpty()){
+            recyclerView.visibility=View.INVISIBLE
+            textViewNoData.visibility=View.VISIBLE
+        }else{
+            recyclerView.visibility=View.VISIBLE
+            textViewNoData.visibility=View.INVISIBLE
+        }
+        setUpRecyclerview(wordsList)
     }
 
     private fun clearDatabase() {
@@ -75,12 +101,13 @@ class HomeFragment() : Fragment() {
                 clearDatabase()
                 val words=wordsResponse.values
                 for (x in 0 until words.size){
-                    val word=AllWords(words[x][0], words[x][1])
+                    val word=AllWords(words[x][0], words[x][1],false)
                     word.save()
                 }
-
+                val wordsList:List<AllWords> = SugarRecord.listAll(AllWords::class.java)
+                fetchOfflineData(wordsList)
                 EnableViews()
-                setUpRecyclerview(words)
+                    // setUpRecyclerview(words)
             }
 
             override fun onFailure(t: Throwable) {
@@ -95,7 +122,7 @@ class HomeFragment() : Fragment() {
         }
     }
 
-    private fun setUpRecyclerview(words: List<List<String>>) {
+    private fun setUpRecyclerview(words: ArrayList<Word>) {
         recyclerView.layoutManager =
             LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         adapter = WordsAdapter(words)
@@ -106,14 +133,14 @@ class HomeFragment() : Fragment() {
     private fun EnableViews() {
         swipeRefresh.isRefreshing = false
         progressBar.visibility = View.GONE
-        textViewUpdate.isEnabled = true
-        textViewMeanings.isEnabled = true
+        buttonUpdate.isEnabled = true
+        buttonMeanings.isEnabled = true
     }
 
     private fun exeOrdersApi() {
         progressBar.visibility=View.VISIBLE
-        textViewUpdate.isEnabled=false
-        textViewMeanings.isEnabled=false
+        buttonUpdate.isEnabled=false
+        buttonMeanings.isEnabled=false
         val call = apiEndpointClient.getData()
         BaseWebservices.executeApi(call, getDataApiListener)
     }
@@ -121,14 +148,14 @@ class HomeFragment() : Fragment() {
     private fun clickListeners(view: View) {
 
         swipeRefresh.setOnRefreshListener {
+          exeOrdersApi()
+        }
+
+        buttonUpdate.setOnClickListener {
             exeOrdersApi()
         }
 
-        textViewUpdate.setOnClickListener {
-            exeOrdersApi()
-        }
-
-        textViewMeanings.setOnClickListener {
+        buttonMeanings.setOnClickListener {
             val words:List<Word>  = SugarRecord.listAll(Word::class.java)
             if (words.size>0) {
                 view.findNavController().navigate(R.id.meaningFragment)
@@ -136,15 +163,93 @@ class HomeFragment() : Fragment() {
                 Toast.makeText(requireActivity(),"Select Words First ",Toast.LENGTH_LONG).show()
             }
         }
+
+        buttonSort.setOnClickListener {
+            showDialog()
+        }
+    }
+
+    fun showDialog() {
+        val sortingTypes = arrayOf( "Alphabetically","Randomly", "Show Only Marked")
+        val builder = AlertDialog.Builder(requireActivity())
+        builder.setTitle(R.string.str_sorting_type)
+        builder.setItems(sortingTypes, DialogInterface.OnClickListener {
+                dialog, which ->
+            // 'which' item of the 'dialog' was selected
+            Toast.makeText(requireActivity(), sortingTypes[which],
+                Toast.LENGTH_SHORT).show()
+            val allWords:ArrayList<Word> = allWordsList
+            if (which==0){
+                recyclerView.visibility=View.VISIBLE
+                textViewNoData.visibility=View.INVISIBLE
+                sortData(allWords)
+            }else if (which==1){
+                recyclerView.visibility=View.VISIBLE
+                textViewNoData.visibility=View.INVISIBLE
+                shuffleData(allWords)
+            }else if (which==2){
+               val words:List<Word> = SugarRecord.listAll(Word::class.java)
+                fetchSelectedWords(words)
+            }
+        })
+        builder.show()
+    }
+
+    private fun fetchSelectedWords(words: List<Word>) {
+        val wordsList: ArrayList<Word> = ArrayList(words.size)
+        for (x in 0 until words.size) {
+            val word = words.get(x).word.toString()
+            val meaning = words.get(x).meaning.toString()
+            val seleted=words.get(x).selected
+            val singleWord: Word = Word(word, meaning,seleted)
+            wordsList.add(singleWord)
+        }
+        if (wordsList.isEmpty()){
+            recyclerView.visibility=View.INVISIBLE
+            textViewNoData.visibility=View.VISIBLE
+        }else{
+            recyclerView.visibility=View.VISIBLE
+            textViewNoData.visibility=View.INVISIBLE
+        }
+        setUpRecyclerview(wordsList)
+    }
+
+    private fun getSelectedWordsList(words: List<Word>):ArrayList<String> {
+        val wordsList: ArrayList<String> = ArrayList(words.size)
+        for (x in 0 until words.size) {
+            val word = words.get(x).word.toString()
+            wordsList.add(word)
+        }
+        return wordsList
+    }
+
+    private fun shuffleData(list: java.util.ArrayList<Word>) {
+        list.shuffle()
+        setUpRecyclerview(list)
+    }
+
+    private fun sortData(list: ArrayList<Word>) {
+        Collections.sort(list, object : Comparator<Word> {
+            override fun compare(o1: Word?, o2: Word?): Int {
+                val s1 = o1!!.word
+                val s2 = o2!!.word
+                return s1!!.compareTo(s2!!, ignoreCase = true)            }
+        })
+        setUpRecyclerview(list)
     }
 
     private fun initViews(view: View) {
         swipeRefresh = view.findViewById(R.id.swipeRefresh)
         recyclerView = view.findViewById(R.id.fragmentHomeRecyclerView)
-        textViewUpdate = view.findViewById(R.id.tv_update)
-        textViewMeanings = view.findViewById(R.id.tv_meanings)
+        textViewNoData = view.findViewById(R.id.tv_no_data)
         wordsAppPreferences = WordsAppPreferences(view.context)
         progressBar=requireActivity().findViewById(R.id.progress_bar)
+
+        buttonUpdate=view.findViewById(R.id.btn_update)
+        buttonMeanings=view.findViewById(R.id.btn_meanings)
+        buttonSort=view.findViewById(R.id.btn_sort)
+
+
     }
 
 }

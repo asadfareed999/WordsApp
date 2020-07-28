@@ -6,10 +6,23 @@
     android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/tv_sorting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sort List"
+        android:visibility="gone"
+        android:textColor="@color/colorBlack"
+        style="@style/TextViewRobotoBold"
+        android:layout_margin="@dimen/_10sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
         android:id="@+id/tv_meanings"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Meanings"
+        android:visibility="gone"
         android:textColor="@color/colorBlack"
         style="@style/TextViewRobotoBold"
         android:layout_margin="@dimen/_10sdp"
@@ -24,8 +37,8 @@
         android:layout_marginBottom="@dimen/_10sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_meanings"
-        app:layout_constraintBottom_toTopOf="@id/tv_update">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_update">
 
         <androidx.cardview.widget.CardView
             xmlns:card_view="http://schemas.android.com/apk/res-auto"
@@ -51,11 +64,77 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Update"
+        android:visibility="gone"
         android:textColor="@color/colorBlack"
         style="@style/TextViewRobotoBold"
         android:layout_margin="@dimen/_10sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <TextView
+        android:id="@+id/tv_no_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Currently No Data Available"
+        android:textColor="@color/colorBlack"
+        style="@style/TextViewRoboto"
+        android:visibility="gone"
+        android:layout_margin="@dimen/_10sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:id="@+id/btn_meanings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Meanings"
+        style="@style/TextViewRoboto"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/bg_round_rectangle"
+        app:layout_constraintStart_toEndOf="@id/btn_sort"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <Button
+        android:id="@+id/btn_update"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update"
+        style="@style/TextViewRoboto"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/bg_round_rectangle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btn_sort"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <Button
+        android:id="@+id/btn_sort"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sort"
+        style="@style/TextViewRoboto"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/bg_round_rectangle"
+        app:layout_constraintStart_toEndOf="@id/btn_update"
+        app:layout_constraintEnd_toStartOf="@id/btn_meanings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

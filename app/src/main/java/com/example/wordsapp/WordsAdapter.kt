@@ -1,18 +1,18 @@
 package com.example.wordsapp
 
+import android.provider.ContactsContract.CommonDataKinds.Note
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.wordsapp.R
 import com.example.wordsapp.networking.responsemodels.Word
 import com.orm.SugarRecord
-import com.orm.SugarRecord.findById
+import com.orm.SugarRecord.find
 
 
-class WordsAdapter(values: List<List<String>>) :
+class WordsAdapter(values: ArrayList<Word>) :
     RecyclerView.Adapter<WordsAdapter.ViewHolder>() {
 
     private val wordsList=values
@@ -28,16 +28,12 @@ class WordsAdapter(values: List<List<String>>) :
 
     //this method is binding the data on the list
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        var index=position
-        index++
-        holder.bindItems(wordsList.get(index))
+        holder.bindItems(wordsList.get(position))
     }
 
     //this method is giving the size of the list
     override fun getItemCount(): Int {
-        var size=wordsList.size
-        size--
-        return size
+        return wordsList.size
     }
 
     //the class is holding the list view
@@ -46,21 +42,29 @@ class WordsAdapter(values: List<List<String>>) :
 
         private val textViewWord:TextView=itemView.findViewById(R.id.tv_list_word)
         private val checkBoxWord=itemView.findViewById<CheckBox>(R.id.cb_list)
-        private lateinit var _word: List<String>
+        private lateinit var _word: Word
 
-        fun bindItems(word: List<String>) {
+        fun bindItems(word: Word) {
                 _word=word
-                textViewWord.text= word[0]
+                textViewWord.text= word.word
+                if (word.selected!!){
+                    checkBoxWord.isChecked=true
+                    checkBoxWord.isEnabled=false
+                }
                 checkBoxWord.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
-           // if (!checkBoxWord.isChecked){
-                val word=Word(_word[0],_word[1])
-                word.save()
-            /*}else{
-                *//*val word: Word = SugarRecord.findById(Word::class.java, 1)
-                word.delete()*//*
+           if (!_word.selected!!) {
+               val word = Word(_word.word, _word.meaning, true)
+               word.save()
+               v!!.tag=word.id.toString()
+               checkBoxWord.isEnabled=false
+           }
+           /* }else{
+                val id=
+                val word: Word = SugarRecord.findWithQuery(Word::class.java, "Delete from Word where word = ?", _word.word)
+                word.delete()
             }*/
         }
     }

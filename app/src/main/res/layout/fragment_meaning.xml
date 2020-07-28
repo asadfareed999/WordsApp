@@ -34,6 +34,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Next"
+        android:visibility="gone"
         android:textColor="@color/colorBlack"
         style="@style/TextViewRobotoBold"
         android:layout_margin="@dimen/_10sdp"
@@ -45,11 +46,63 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Home"
+        android:visibility="gone"
         android:textColor="@color/colorBlack"
         style="@style/TextViewRobotoBold"
         android:layout_margin="@dimen/_10sdp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <Button
+        android:id="@+id/btn_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next"
+        style="@style/TextViewRoboto"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/bg_round_rectangle"
+        app:layout_constraintStart_toEndOf="@id/btn_home"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <Button
+        android:id="@+id/btn_previous"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Previous"
+        style="@style/TextViewRoboto"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/bg_round_rectangle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btn_home"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
+
+    <Button
+        android:id="@+id/btn_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home"
+        style="@style/TextViewRoboto"
+        android:textStyle="bold"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="@color/colorWhite"
+        android:background="@drawable/bg_round_rectangle"
+        app:layout_constraintStart_toEndOf="@id/btn_previous"
+        app:layout_constraintEnd_toStartOf="@id/btn_next"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
 
 
