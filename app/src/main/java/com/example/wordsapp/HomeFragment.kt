@@ -30,6 +30,7 @@ import kotlin.collections.ArrayList
 
 class HomeFragment() : Fragment() {
 
+    private lateinit var wordsList1: ArrayList<Word>
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: WordsAdapter
@@ -49,24 +50,52 @@ class HomeFragment() : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         val view: View = inflater.inflate(R.layout.fragment_home, container, false)
-        wordsAppPreferences = WordsAppPreferences(view.context)
+        //wordsAppPreferences = WordsAppPreferences(view.context)
         initViews(view)
         initApiListener(view)
         clickListeners(view)
         swipeRefresh.isRefreshing = true
-        val words:List<AllWords> = SugarRecord.listAll(AllWords::class.java)
-        val size=words.size
-        if (words.isEmpty()){
-            exeOrdersApi()
-        }else{
-            fetchOfflineData(words)
+        val sortingType=wordsAppPreferences.getSortingType()
+        if (sortingType.equals("Show Only Marked")){
+            val words:List<Word> = SugarRecord.listAll(Word::class.java)
+            fetchSelectedWords(words)
             swipeRefresh.isRefreshing = false
+            updateAllWordsList()
+        }else {
+            val words: List<AllWords> = SugarRecord.listAll(AllWords::class.java)
+            val size = words.size
+            if (words.isEmpty()) {
+                exeOrdersApi()
+            } else {
+                fetchOfflineData(words)
+                swipeRefresh.isRefreshing = false
+            }
         }
         return view
     }
 
+    private fun updateAllWordsList() {
+        val _words: List<AllWords> = SugarRecord.listAll(AllWords::class.java)
+        val wordsList: ArrayList<Word> = ArrayList(_words.size)
+        val selectedWordsList = getSelectedWordsList(SugarRecord.listAll(Word::class.java))
+        val size=selectedWordsList.size
+        for (x in 0 until _words.size) {
+            val word = _words.get(x).word.toString()
+            val meaning = _words.get(x).meaning.toString()
+            var seleted = _words.get(x).selected
+            if (selectedWordsList.contains(word)) {
+                seleted = true
+            }
+            val singleWord: Word = Word(word, meaning, seleted)
+            wordsList.add(singleWord)
+        }
+        wordsList1=wordsList
+        //wordsList.removeAt(0)
+        allWordsList = wordsList
+    }
+
     private fun fetchOfflineData(words: List<AllWords>) {
-        val wordsList: ArrayList<Word> = ArrayList(words.size)
+        /*val wordsList: ArrayList<Word> = ArrayList(words.size)
         val selectedWordsList=getSelectedWordsList(SugarRecord.listAll(Word::class.java))
         for (x in 0 until words.size) {
             val word = words.get(x).word.toString()
@@ -78,19 +107,20 @@ class HomeFragment() : Fragment() {
             val singleWord: Word = Word(word, meaning,seleted)
             wordsList.add(singleWord)
         }
-        wordsList.removeAt(0)
-        allWordsList=wordsList
-        if (wordsList.isEmpty()){
+        //wordsList.removeAt(0)
+        allWordsList=wordsList*/
+        updateAllWordsList()
+        if (wordsList1.isEmpty()){
             recyclerView.visibility=View.INVISIBLE
             textViewNoData.visibility=View.VISIBLE
         }else{
             recyclerView.visibility=View.VISIBLE
             textViewNoData.visibility=View.INVISIBLE
         }
-        setUpRecyclerview(wordsList)
+        setUpRecyclerview(wordsList1)
     }
 
-    private fun clearDatabase() {
+    private fun clearAllWordsTable() {
         SugarRecord.deleteAll(AllWords::class.java)
     }
 
@@ -98,9 +128,9 @@ class HomeFragment() : Fragment() {
         getDataApiListener = object : OnResponseListener<ResponseWords> {
             override fun onSuccess(response: ResponseWords?) {
                 val wordsResponse: ResponseWords = response!!
-                clearDatabase()
+                clearAllWordsTable()
                 val words=wordsResponse.values
-                for (x in 0 until words.size){
+                for (x in 1 until words.size){
                     val word=AllWords(words[x][0], words[x][1],false)
                     word.save()
                 }
@@ -158,7 +188,9 @@ class HomeFragment() : Fragment() {
         buttonMeanings.setOnClickListener {
             val words:List<Word>  = SugarRecord.listAll(Word::class.java)
             if (words.size>0) {
-                view.findNavController().navigate(R.id.meaningFragment)
+                val action = HomeFragmentDirections.actionHomeFragmentToMeaningFragment()
+                view.findNavController().navigate(action)
+               // view.findNavController().navigate(R.id.meaningFragment)
             }else{
                 Toast.makeText(requireActivity(),"Select Words First ",Toast.LENGTH_LONG).show()
             }
@@ -178,18 +210,44 @@ class HomeFragment() : Fragment() {
             // 'which' item of the 'dialog' was selected
             Toast.makeText(requireActivity(), sortingTypes[which],
                 Toast.LENGTH_SHORT).show()
+            updateAllWordsList()
             val allWords:ArrayList<Word> = allWordsList
             if (which==0){
                 recyclerView.visibility=View.VISIBLE
                 textViewNoData.visibility=View.INVISIBLE
                 sortData(allWords)
+                wordsAppPreferences.setSortingType("Alphabetically")
             }else if (which==1){
                 recyclerView.visibility=View.VISIBLE
                 textViewNoData.visibility=View.INVISIBLE
                 shuffleData(allWords)
+                wordsAppPreferences.setSortingType("Randomly")
             }else if (which==2){
-               val words:List<Word> = SugarRecord.listAll(Word::class.java)
-                fetchSelectedWords(words)
+               /*val words:List<Word> = SugarRecord.listAll(Word::class.java)
+                fetchSelectedWords(words)*/
+                wordsAppPreferences.setSortingType("Show Only Marked")
+                val _words: List<AllWords> = SugarRecord.listAll(AllWords::class.java)
+                val wordsList: ArrayList<Word> = ArrayList(_words.size)
+                val selectedWordsList = getSelectedWordsList(SugarRecord.listAll(Word::class.java))
+                val size=selectedWordsList.size
+                for (x in 0 until _words.size) {
+                    val word = _words.get(x).word.toString()
+                    val meaning = _words.get(x).meaning.toString()
+                    var seleted: Boolean?
+                    if (selectedWordsList.contains(word)) {
+                        seleted = true
+                        val singleWord: Word = Word(word, meaning, seleted)
+                        wordsList.add(singleWord)
+                    }
+                }
+                if (wordsList.isEmpty()){
+                    recyclerView.visibility=View.INVISIBLE
+                    textViewNoData.visibility=View.VISIBLE
+                }else{
+                    recyclerView.visibility=View.VISIBLE
+                    textViewNoData.visibility=View.INVISIBLE
+                }
+                setUpRecyclerview(wordsList)
             }
         })
         builder.show()
@@ -226,6 +284,11 @@ class HomeFragment() : Fragment() {
     private fun shuffleData(list: java.util.ArrayList<Word>) {
         list.shuffle()
         setUpRecyclerview(list)
+        clearAllWordsTable()
+        for (x in 0 until list.size){
+            val word=AllWords(list.get(x).word, list.get(x).meaning,list.get(x).selected)
+            word.save()
+        }
     }
 
     private fun sortData(list: ArrayList<Word>) {
@@ -236,6 +299,11 @@ class HomeFragment() : Fragment() {
                 return s1!!.compareTo(s2!!, ignoreCase = true)            }
         })
         setUpRecyclerview(list)
+        clearAllWordsTable()
+        for (x in 0 until list.size){
+            val word=AllWords(list.get(x).word, list.get(x).meaning,list.get(x).selected)
+            word.save()
+        }
     }
 
     private fun initViews(view: View) {

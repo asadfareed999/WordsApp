@@ -51,16 +51,24 @@ class WordsAdapter(values: ArrayList<Word>) :
                     checkBoxWord.isChecked=true
                     checkBoxWord.isEnabled=false
                 }
+                itemView.setOnClickListener(this)
                 checkBoxWord.setOnClickListener(this)
+                textViewWord.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
-           if (!_word.selected!!) {
+          // if (!_word.selected!!) {
+               checkBoxWord.isChecked=true
                val word = Word(_word.word, _word.meaning, true)
                word.save()
-               v!!.tag=word.id.toString()
+            val _words: List<Word> = SugarRecord.listAll(Word::class.java)
+            val size=_words.size
+
+            // v!!.tag=word.id.toString()
                checkBoxWord.isEnabled=false
-           }
+            v!!.isEnabled=false
+
+            // }
            /* }else{
                 val id=
                 val word: Word = SugarRecord.findWithQuery(Word::class.java, "Delete from Word where word = ?", _word.word)
