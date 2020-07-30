@@ -1,6 +1,5 @@
 package com.example.wordsapp
 
-import android.provider.ContactsContract.CommonDataKinds.Note
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wordsapp.networking.responsemodels.Word
 import com.orm.SugarRecord
-import com.orm.SugarRecord.find
+import com.orm.SugarRecord.deleteAll
 
 
 class WordsAdapter(values: ArrayList<Word>) :
@@ -47,17 +46,18 @@ class WordsAdapter(values: ArrayList<Word>) :
         fun bindItems(word: Word) {
                 _word=word
                 textViewWord.text= word.word
+                checkBoxWord.isEnabled=false
                 if (word.selected!!){
                     checkBoxWord.isChecked=true
-                    checkBoxWord.isEnabled=false
+                  //  checkBoxWord.isEnabled=false
                 }
                 itemView.setOnClickListener(this)
-                checkBoxWord.setOnClickListener(this)
+               // checkBoxWord.setOnClickListener(this)
                 textViewWord.setOnClickListener(this)
         }
 
         override fun onClick(v: View?) {
-          // if (!_word.selected!!) {
+          if (!checkBoxWord.isChecked) {
                checkBoxWord.isChecked=true
                val word = Word(_word.word, _word.meaning, true)
                word.save()
@@ -65,15 +65,13 @@ class WordsAdapter(values: ArrayList<Word>) :
             val size=_words.size
 
             // v!!.tag=word.id.toString()
-               checkBoxWord.isEnabled=false
-            v!!.isEnabled=false
-
-            // }
-           /* }else{
-                val id=
-                val word: Word = SugarRecord.findWithQuery(Word::class.java, "Delete from Word where word = ?", _word.word)
-                word.delete()
-            }*/
+            //   checkBoxWord.isEnabled=false
+          //  v!!.isEnabled=false
+          }else{
+              val word=_word.word
+              SugarRecord.deleteAll(Word::class.java, "word = ?", word)
+              checkBoxWord.isChecked=false
+          }
         }
     }
 }

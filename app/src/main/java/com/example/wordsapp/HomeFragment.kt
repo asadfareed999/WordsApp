@@ -28,7 +28,7 @@ import kotlin.Comparator
 import kotlin.collections.ArrayList
 
 
-class HomeFragment() : Fragment() {
+class HomeFragment : Fragment() {
 
     private lateinit var wordsList1: ArrayList<Word>
     private lateinit var swipeRefresh: SwipeRefreshLayout
@@ -83,9 +83,7 @@ class HomeFragment() : Fragment() {
             val word = _words.get(x).word.toString()
             val meaning = _words.get(x).meaning.toString()
             var seleted = _words.get(x).selected
-            if (selectedWordsList.contains(word)) {
-                seleted = true
-            }
+            seleted = selectedWordsList.contains(word)
             val singleWord: Word = Word(word, meaning, seleted)
             wordsList.add(singleWord)
         }
@@ -208,8 +206,7 @@ class HomeFragment() : Fragment() {
         builder.setItems(sortingTypes, DialogInterface.OnClickListener {
                 dialog, which ->
             // 'which' item of the 'dialog' was selected
-            Toast.makeText(requireActivity(), sortingTypes[which],
-                Toast.LENGTH_SHORT).show()
+           // Toast.makeText(requireActivity(), sortingTypes[which], Toast.LENGTH_SHORT).show()
             updateAllWordsList()
             val allWords:ArrayList<Word> = allWordsList
             if (which==0){
