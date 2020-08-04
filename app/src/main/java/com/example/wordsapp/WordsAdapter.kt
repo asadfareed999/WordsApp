@@ -5,10 +5,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.wordsapp.networking.responsemodels.Word
+import com.example.wordsapp.prefrences.WordsAppPreferences
 import com.orm.SugarRecord
-import com.orm.SugarRecord.deleteAll
 
 
 class WordsAdapter(values: ArrayList<Word>) :
@@ -46,18 +47,24 @@ class WordsAdapter(values: ArrayList<Word>) :
         fun bindItems(word: Word) {
                 _word=word
                 textViewWord.text= word.word
-                checkBoxWord.isEnabled=false
+                checkBoxWord.isEnabled=true
                 if (word.selected!!){
                     checkBoxWord.isChecked=true
                   //  checkBoxWord.isEnabled=false
                 }
-                itemView.setOnClickListener(this)
-               // checkBoxWord.setOnClickListener(this)
-                textViewWord.setOnClickListener(this)
+               // itemView.setOnClickListener(this)
+               checkBoxWord.setOnClickListener(this)
+                textViewWord.setOnClickListener {
+                    val word:String=_word.word.toString()
+                    val meaning:String=_word.meaning.toString()
+                    val array:Array<String> = arrayOf(word,meaning)
+                    val action = HomeFragmentDirections.actionHomeFragmentToMeaningFragment(array)
+                    it.findNavController().navigate(action)
+                }
         }
 
         override fun onClick(v: View?) {
-          if (!checkBoxWord.isChecked) {
+          if (checkBoxWord.isChecked) {
                checkBoxWord.isChecked=true
                val word = Word(_word.word, _word.meaning, true)
                word.save()

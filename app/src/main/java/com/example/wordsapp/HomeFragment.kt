@@ -3,13 +3,16 @@ package com.example.wordsapp
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,8 +26,9 @@ import com.example.wordsapp.networking.responsemodels.Word
 import com.example.wordsapp.prefrences.WordsAppPreferences
 import com.google.android.material.snackbar.Snackbar
 import com.orm.SugarRecord
+import com.yalantis.jellytoolbar.listener.JellyListener
+import com.yalantis.jellytoolbar.widget.JellyToolbar
 import java.util.*
-import kotlin.Comparator
 import kotlin.collections.ArrayList
 
 
@@ -43,6 +47,8 @@ class HomeFragment : Fragment() {
     private lateinit var buttonUpdate:Button
     private lateinit var buttonMeanings:Button
     private lateinit var buttonSort:Button
+    private var toolbar: JellyToolbar? = null
+    private var editText: AppCompatEditText? = null
 
 
     override fun onCreateView(
@@ -65,7 +71,7 @@ class HomeFragment : Fragment() {
             val words: List<AllWords> = SugarRecord.listAll(AllWords::class.java)
             val size = words.size
             if (words.isEmpty()) {
-                exeOrdersApi()
+                exeWordsApi()
             } else {
                 fetchOfflineData(words)
                 swipeRefresh.isRefreshing = false
@@ -165,7 +171,7 @@ class HomeFragment : Fragment() {
         buttonMeanings.isEnabled = true
     }
 
-    private fun exeOrdersApi() {
+    private fun exeWordsApi() {
         progressBar.visibility=View.VISIBLE
         buttonUpdate.isEnabled=false
         buttonMeanings.isEnabled=false
@@ -173,29 +179,50 @@ class HomeFragment : Fragment() {
         BaseWebservices.executeApi(call, getDataApiListener)
     }
 
+    private fun exeUrlApi(s: String) {
+        progressBar.visibility=View.VISIBLE
+        buttonUpdate.isEnabled=false
+        buttonMeanings.isEnabled=false
+        val call = apiEndpointClient.getUrlData(s)
+        BaseWebservices.executeApi(call, getDataApiListener)
+    }
+
     private fun clickListeners(view: View) {
 
         swipeRefresh.setOnRefreshListener {
-          exeOrdersApi()
+          exeWordsApi()
         }
 
         buttonUpdate.setOnClickListener {
-            exeOrdersApi()
+            exeWordsApi()
         }
 
         buttonMeanings.setOnClickListener {
             val words:List<Word>  = SugarRecord.listAll(Word::class.java)
-            if (words.size>0) {
-                val action = HomeFragmentDirections.actionHomeFragmentToMeaningFragment()
+           // if (words.size>0) {
+            val array:Array<String> = arrayOf("","")
+            val action = HomeFragmentDirections.actionHomeFragmentToMeaningFragment(array)
                 view.findNavController().navigate(action)
                // view.findNavController().navigate(R.id.meaningFragment)
-            }else{
+            /*}else{
                 Toast.makeText(requireActivity(),"Select Words First ",Toast.LENGTH_LONG).show()
-            }
+            }*/
         }
 
         buttonSort.setOnClickListener {
             showDialog()
+        }
+
+        editText!!.setOnEditorActionListener { v, actionId, event ->
+            val handled = false
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                //Perform your Actions here.
+                Toast.makeText(requireActivity(),"Searching.... ",Toast.LENGTH_LONG).show()
+                toolbar!!.collapse()
+                val url=editText!!.text.toString().plus("?key=AIzaSyAfIcH-UbiuxC6jkj4BboVZISmNQtSO5co")
+                exeUrlApi(url)
+            }
+            handled
         }
     }
 
@@ -313,7 +340,35 @@ class HomeFragment : Fragment() {
         buttonUpdate=view.findViewById(R.id.btn_update)
         buttonMeanings=view.findViewById(R.id.btn_meanings)
         buttonSort=view.findViewById(R.id.btn_sort)
+        toolbar = view.findViewById(R.id.toolbar_jelly) as JellyToolbar
+        //toolbar.getToolbar().setNavigationIcon(R.drawable.ic_menu)
+        //toolbar!!.toolbar!!.navigationIcon=requireActivity().getDrawable(R.drawable.ic_menu)
+        toolbar!!.toolbar!!.setPadding(0, getStatusBarHeight(), 0, 0);
+        toolbar!!.jellyListener = jellyListener
 
+        editText = LayoutInflater.from(requireActivity()).inflate(R.layout.edit_text_jelly, null) as AppCompatEditText
+        editText!!.setBackgroundResource(R.color.colorTransparent)
+        editText!!.isSingleLine=true
+        toolbar!!.contentView = editText
+    }
+
+    private fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        return result
+    }
+
+    val jellyListener: JellyListener = object : JellyListener() {
+        override fun onCancelIconClicked() {
+            if (TextUtils.isEmpty(editText!!.text)) {
+                toolbar!!.collapse()
+            } else {
+                editText!!.text!!.clear()
+            }
+        }
 
     }
 

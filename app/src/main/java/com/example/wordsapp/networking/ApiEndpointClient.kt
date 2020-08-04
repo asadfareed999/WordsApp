@@ -1,8 +1,11 @@
 package com.example.wordsapp.networking
 
 import com.example.wordsapp.networking.responsemodels.ResponseWords
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.GET
+import retrofit2.http.Url
+
 
 interface ApiEndpointClient {
 
@@ -16,5 +19,8 @@ interface ApiEndpointClient {
 
     @GET(GET_DATA)
     fun getData(): Call<ResponseWords>
+
+    @GET
+    fun getUrlData(@Url url: String): Call<ResponseWords>
 
 }

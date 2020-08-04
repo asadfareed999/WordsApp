@@ -15,4 +15,7 @@
     <color name="colorTilHint">@color/colorWhite</color>
     <color name="colorTextWhite">@color/colorWhite</color>
     <color name="colorTextBlack">@color/colorBlack</color>
+    <color name="colorTransparent">#00ffffff</color>
+    <color name="colorStart">#cb5ed9</color>
+    <color name="colorEnd">#8463d4</color>
 </resources>

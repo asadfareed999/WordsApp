@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">WordsApp</string>
     <string name="str_sorting_type">Sorting Type</string>
+    <string name="str_words">Words</string>
     <string-array name="sorting_array">
         <item>Randomly</item>
         <item>Alphabetically</item>
