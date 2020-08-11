@@ -3,16 +3,12 @@ package com.example.wordsapp
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,8 +22,9 @@ import com.example.wordsapp.networking.responsemodels.Word
 import com.example.wordsapp.prefrences.WordsAppPreferences
 import com.google.android.material.snackbar.Snackbar
 import com.orm.SugarRecord
-import com.yalantis.jellytoolbar.listener.JellyListener
-import com.yalantis.jellytoolbar.widget.JellyToolbar
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -47,8 +44,8 @@ class HomeFragment : Fragment() {
     private lateinit var buttonUpdate:Button
     private lateinit var buttonMeanings:Button
     private lateinit var buttonSort:Button
-    private var toolbar: JellyToolbar? = null
-    private var editText: AppCompatEditText? = null
+    /*private var toolbar: JellyToolbar? = null
+    private var editText: AppCompatEditText? = null*/
 
 
     override fun onCreateView(
@@ -169,12 +166,14 @@ class HomeFragment : Fragment() {
         progressBar.visibility = View.GONE
         buttonUpdate.isEnabled = true
         buttonMeanings.isEnabled = true
+        buttonSort.isEnabled=true
     }
 
     private fun exeWordsApi() {
         progressBar.visibility=View.VISIBLE
         buttonUpdate.isEnabled=false
         buttonMeanings.isEnabled=false
+        buttonSort.isEnabled=false
         val call = apiEndpointClient.getData()
         BaseWebservices.executeApi(call, getDataApiListener)
     }
@@ -183,6 +182,7 @@ class HomeFragment : Fragment() {
         progressBar.visibility=View.VISIBLE
         buttonUpdate.isEnabled=false
         buttonMeanings.isEnabled=false
+        buttonSort.isEnabled=false
         val call = apiEndpointClient.getUrlData(s)
         BaseWebservices.executeApi(call, getDataApiListener)
     }
@@ -213,7 +213,7 @@ class HomeFragment : Fragment() {
             showDialog()
         }
 
-        editText!!.setOnEditorActionListener { v, actionId, event ->
+        /*editText!!.setOnEditorActionListener { v, actionId, event ->
             val handled = false
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 //Perform your Actions here.
@@ -223,7 +223,7 @@ class HomeFragment : Fragment() {
                 exeUrlApi(url)
             }
             handled
-        }
+        }*/
     }
 
     fun showDialog() {
@@ -340,7 +340,7 @@ class HomeFragment : Fragment() {
         buttonUpdate=view.findViewById(R.id.btn_update)
         buttonMeanings=view.findViewById(R.id.btn_meanings)
         buttonSort=view.findViewById(R.id.btn_sort)
-        toolbar = view.findViewById(R.id.toolbar_jelly) as JellyToolbar
+        /*toolbar = view.findViewById(R.id.toolbar_jelly) as JellyToolbar
         //toolbar.getToolbar().setNavigationIcon(R.drawable.ic_menu)
         //toolbar!!.toolbar!!.navigationIcon=requireActivity().getDrawable(R.drawable.ic_menu)
         toolbar!!.toolbar!!.setPadding(0, getStatusBarHeight(), 0, 0);
@@ -349,7 +349,7 @@ class HomeFragment : Fragment() {
         editText = LayoutInflater.from(requireActivity()).inflate(R.layout.edit_text_jelly, null) as AppCompatEditText
         editText!!.setBackgroundResource(R.color.colorTransparent)
         editText!!.isSingleLine=true
-        toolbar!!.contentView = editText
+        toolbar!!.contentView = editText*/
     }
 
     private fun getStatusBarHeight(): Int {
@@ -361,17 +361,20 @@ class HomeFragment : Fragment() {
         return result
     }
 
-    val jellyListener: JellyListener = object : JellyListener() {
-        override fun onCancelIconClicked() {
-            if (TextUtils.isEmpty(editText!!.text)) {
-                toolbar!!.collapse()
-            } else {
-                editText!!.text!!.clear()
-            }
-        }
-
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onUrlEvent(event: UrlEvent) {
+        exeUrlApi(event.url)
     }
 
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
+    }
 }
 
 

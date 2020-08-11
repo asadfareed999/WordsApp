@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
+    <!--<LinearLayout
         android:id="@+id/layout_Linear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
         app:titleTextColor="@android:color/white"
         />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
     <TextView
         android:id="@+id/tv_sorting"
@@ -62,7 +62,7 @@
         android:layout_marginBottom="@dimen/_10sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_Linear"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/btn_update">
 
         <androidx.cardview.widget.CardView
@@ -121,7 +121,7 @@
         android:paddingEnd="@dimen/_10sdp"
         android:layout_marginBottom="@dimen/_10sdp"
         android:textColor="@color/colorWhite"
-        android:background="@drawable/bg_round_rectangle"
+        android:background="@color/colorPrimary"
         app:layout_constraintStart_toEndOf="@id/btn_sort"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -138,7 +138,7 @@
         android:paddingEnd="@dimen/_10sdp"
         android:layout_marginBottom="@dimen/_10sdp"
         android:textColor="@color/colorWhite"
-        android:background="@drawable/bg_round_rectangle"
+        android:background="@color/colorPrimary"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/btn_sort"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -155,7 +155,7 @@
         android:paddingEnd="@dimen/_10sdp"
         android:layout_marginBottom="@dimen/_10sdp"
         android:textColor="@color/colorWhite"
-        android:background="@drawable/bg_round_rectangle"
+        android:background="@color/colorPrimary"
         app:layout_constraintStart_toEndOf="@id/btn_update"
         app:layout_constraintEnd_toStartOf="@id/btn_meanings"
         app:layout_constraintBottom_toBottomOf="parent"
