@@ -85,7 +85,7 @@ object BaseWebservices {
                     response.isSuccessful -> listener.onSuccess(response.body())
                     call.isCanceled -> listener.onCancel()
                     else -> {
-                        val error = CamdenCareErrorHandling(response).handleError()
+                        val error = DefaultErrorHandling(response).handleError()
                         listener.onFailure(error)
                     }
                 }

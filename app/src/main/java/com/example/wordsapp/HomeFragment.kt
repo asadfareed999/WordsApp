@@ -143,7 +143,7 @@ class HomeFragment : Fragment() {
 
             override fun onFailure(t: Throwable) {
                 EnableViews()
-                Snackbar.make(view, t.message.toString(), Snackbar.LENGTH_LONG).show()
+                Snackbar.make(view, "Something went wrong! Please check Url or Sheet", Snackbar.LENGTH_LONG).show()
             }
 
             override fun onCancel() {
